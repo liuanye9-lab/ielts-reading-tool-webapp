@@ -1,24 +1,29 @@
-/* ================= WebApp MVP Supabase integration =================
-   填写方式二选一：
-   1. 在页面“云端账号 -> Supabase 配置”里填写 Project URL 和 anon public key。
-   2. 直接把下面两个常量改成你的 Supabase 项目配置。
-   注意：只能使用 anon public key，不能把 service_role key 放在前端。
+/* ================= WebApp MVP cloud integration =================
+   Production mode:
+   - Supabase Project URL and publishable/anon key are embedded below.
+   - Ordinary users do not need to configure Supabase.
+   - Only publishable/anon key is allowed in frontend code. Never put service_role / secret key here.
 */
-const CLOUD_DEFAULT_SUPABASE_URL = "";
-const CLOUD_DEFAULT_SUPABASE_ANON_KEY = "";
+const CLOUD_DEFAULT_SUPABASE_URL = "https://aupmmuwgwqrrfeuqgmrj.supabase.co";
+const CLOUD_DEFAULT_SUPABASE_ANON_KEY = "sb_publishable_d-G2MftOjWF_4jP6U7kNsA_yI1Tq853";
 const CLOUD_CONFIG_STORAGE_KEY = "ieltsSupabaseConfig";
 let supabaseClient = null;
 let currentCloudProjectId = localStorage.getItem("ieltsCurrentCloudProjectId") || null;
 
 function getStoredSupabaseConfig() {
+    // 正式模式优先使用代码内置配置，避免普通用户需要填写 Supabase 配置。
+    // localStorage 里的旧测试配置不再覆盖正式配置，防止不同浏览器/旧配置导致登录异常。
+    if (CLOUD_DEFAULT_SUPABASE_URL && CLOUD_DEFAULT_SUPABASE_ANON_KEY) {
+        return {
+            url: CLOUD_DEFAULT_SUPABASE_URL,
+            anonKey: CLOUD_DEFAULT_SUPABASE_ANON_KEY
+        };
+    }
     try {
         const saved = JSON.parse(localStorage.getItem(CLOUD_CONFIG_STORAGE_KEY) || "{}");
-        return {
-            url: saved.url || CLOUD_DEFAULT_SUPABASE_URL,
-            anonKey: saved.anonKey || CLOUD_DEFAULT_SUPABASE_ANON_KEY
-        };
+        return { url: saved.url || "", anonKey: saved.anonKey || "" };
     } catch (error) {
-        return { url: CLOUD_DEFAULT_SUPABASE_URL, anonKey: CLOUD_DEFAULT_SUPABASE_ANON_KEY };
+        return { url: "", anonKey: "" };
     }
 }
 
@@ -30,11 +35,11 @@ function initSupabaseClient() {
     const config = getStoredSupabaseConfig();
     if (!window.supabase || !isValidSupabaseConfig(config)) {
         supabaseClient = null;
-        updateCloudStatus("未配置 Supabase。请打开「登录 / 云端同步」填写 Project URL 和 anon public key。");
+        updateCloudStatus("云端服务暂不可用：开发者尚未配置云端连接。");
         return null;
     }
     supabaseClient = window.supabase.createClient(config.url.trim(), config.anonKey.trim());
-    updateCloudStatus("Supabase 已配置，等待登录。");
+    updateCloudStatus("云端服务已连接，等待登录。");
     return supabaseClient;
 }
 
@@ -86,7 +91,7 @@ function saveSupabaseConfigFromModal() {
 async function refreshCloudAuthStatus() {
     const client = ensureSupabaseClient();
     if (!client) {
-        setAuthButtonText("配置云端");
+        setAuthButtonText("登录");
         return null;
     }
     const { data, error } = await client.auth.getUser();
@@ -116,7 +121,7 @@ async function handleCloudSignUp() {
     if (!email || !password) { alert("请输入邮箱和密码"); return; }
     const { error } = await client.auth.signUp({ email, password });
     if (error) { alert("注册失败：" + error.message); return; }
-    alert("注册请求已提交。如果 Supabase 开启了邮箱确认，请先去邮箱完成确认。");
+    alert("注册成功。如果系统要求邮箱确认，请先去邮箱完成确认；否则可以直接登录。");
     refreshCloudAuthStatus();
 }
 
@@ -324,7 +329,7 @@ async function renderCloudProjectsList(showNeedLoginAlert = true) {
     if (!list) return;
     const client = ensureSupabaseClient();
     if (!client) {
-        list.innerHTML = `<div class="cloud-empty">还没有配置 Supabase。点击顶部「登录」填写 Project URL 和 anon public key。</div>`;
+        list.innerHTML = `<div class="cloud-empty">云端服务暂不可用，请联系开发者检查配置。</div>`;
         if (showNeedLoginAlert) openAuthModal();
         return;
     }

@@ -63,7 +63,7 @@
                 <div class="welcome-actions">
                     <button class="welcome-primary" onclick="enterProgram()">进入程序</button>
                     <button class="welcome-secondary" onclick="openGuideFromWelcome()">查看说明文档</button>
-                    <button class="welcome-secondary" onclick="openAuthModal()">登录 / 云端同步</button>
+                    <button class="welcome-secondary" onclick="openAuthModal()">登录 / 注册</button>
                 </div>
                 <div class="welcome-meta">
                     <span>英文脑阅读训练</span>
@@ -302,12 +302,9 @@
             <div class="cloud-modal-head">
                 <div>
                     <h3>云端账号</h3>
-                    <p>登录后可把阅读项目保存到 Supabase 云数据库。</p>
+                    <p>登录后可把阅读项目保存到云端，并在不同浏览器或设备中恢复。</p>
                 </div>
                 <button onclick="closeAuthModal()" class="cloud-icon-btn" aria-label="关闭">×</button>
-            </div>
-            <div class="cloud-config-alert" id="cloud-config-alert">
-                <strong>首次配置：</strong>先创建 Supabase 项目，把 Project URL 和 anon public key 填到下面。数据库 SQL 在压缩包里的 <code>supabase-schema.sql</code>。
             </div>
             <div class="cloud-form-grid">
                 <label>
@@ -325,19 +322,6 @@
                 <button onclick="handleCloudSignOut()" class="cloud-ghost-btn">退出</button>
             </div>
             <div class="cloud-status" id="cloud-auth-status">未登录</div>
-            <details class="cloud-config-box">
-                <summary>Supabase 配置</summary>
-                <label>
-                    <span>Project URL</span>
-                    <input id="supabase-url-input" type="url" placeholder="https://xxxx.supabase.co">
-                </label>
-                <label>
-                    <span>Anon public key</span>
-                    <textarea id="supabase-anon-key-input" rows="3" placeholder="eyJhbGciOi..."></textarea>
-                </label>
-                <button onclick="saveSupabaseConfigFromModal()" class="cloud-secondary-btn w-full">保存配置并初始化</button>
-                <p class="cloud-help-text">只填写 anon public key，不要填写 service_role key。service_role 只能放后端。</p>
-            </details>
         </div>
     </div>
 

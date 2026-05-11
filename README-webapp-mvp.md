@@ -1,18 +1,37 @@
 # IELTS Reading Tool WebApp MVP 配置说明
 
-这版在原静态网页基础上加入了 Supabase 登录与云端项目保存。
+这版在原静态网页基础上加入了云端账号、云端项目保存和跨浏览器恢复。
 
-## 你需要配置什么
+## 你已经完成的配置
 
-1. 注册 Supabase，创建一个 Project。
-2. 进入 `SQL Editor`，执行 `supabase-schema.sql`。
-3. 在 Supabase 后台找到：
-   - Project URL
-   - anon public key
-4. 打开网页，点击「登录 / 云端同步」，把这两个配置填进去。
-5. 注册 / 登录邮箱账号。
-6. 导入阅读材料，标注 A/S/D，然后点击「云端保存」。
-7. 点击「我的项目」可以恢复历史项目。
+当前版本已经把 Supabase Project URL 和 publishable/anon key 写入 `script.js` 顶部。普通用户不需要填写 Supabase 配置。
+
+内置配置：
+
+- Supabase URL: `https://aupmmuwgwqrrfeuqgmrj.supabase.co`
+- Key 类型: `sb_publishable` / publishable key
+
+注意：只能把 publishable/anon key 放进前端，绝对不要把 `service_role`、`secret key` 或 `sb_secret_xxx` 放进前端。
+
+## 你还需要确认什么
+
+1. Supabase 里已经执行过 `supabase-schema.sql`。
+2. `reading_projects` 表已经存在。
+3. RLS 已开启。
+4. Email 登录可用。
+5. 测试阶段可关闭邮箱确认。
+
+## 普通用户使用流程
+
+1. 打开网站。
+2. 点击「登录 / 注册」。
+3. 输入邮箱和密码。
+4. 注册或登录。
+5. 导入阅读材料。
+6. 标注 A/S/D。
+7. 点击「云端保存」。
+8. 在另一个浏览器登录同一账号。
+9. 打开「我的项目」恢复历史项目。
 
 ## 当前保存内容
 
@@ -26,9 +45,8 @@
 - 逻辑连线的起点、终点和标签
 - 字体大小与行距设置
 
-## 注意
+## 当前版本定位
 
-- 这还是 WebApp MVP，不是完整生产级 SaaS。
-- 现在用 `reading_projects.app_state` 整体保存状态，便于先跑通闭环。
-- 后续如果要做统计、AI 报告、错题分析，需要继续拆表：annotations / vocabulary / answers / sessions。
-- 绝对不要把 Supabase `service_role key` 放进前端，只能使用 `anon public key`。
+这还是 WebApp MVP，不是完整生产级 SaaS。现在用 `reading_projects.app_state` 整体保存状态，便于先跑通登录、保存、恢复闭环。
+
+后续如果要做统计、AI 报告、错题分析，需要继续拆表：`annotations / vocabulary / answers / sessions`。
