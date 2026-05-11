@@ -200,19 +200,61 @@ function restoreLineRecords(records = [], shouldSaveAfter = false) {
     }, 120);
 }
 
-function restoreAppState(state = {}) {
-    if (!state || typeof state !== "object") return;
+function normalizeCloudAppState(rawState = {}) {
+    // 兼容两种情况：Supabase jsonb 返回对象；旧数据/异常数据可能返回 JSON 字符串。
+    if (!rawState) return {};
+    if (typeof rawState === "string") {
+        try { return JSON.parse(rawState); }
+        catch (error) { console.warn("云端 app_state 不是有效 JSON", error); return {}; }
+    }
+    return rawState;
+}
+
+function stripHTMLForCheck(html = "") {
+    const box = document.createElement("div");
+    box.innerHTML = String(html || "");
+    return (box.textContent || "").replace(/\s+/g, "").trim();
+}
+
+function hasMeaningfulAppState(rawState = {}) {
+    const state = normalizeCloudAppState(rawState);
+    const passageText = stripHTMLForCheck(state.passageHTML || "");
+    const questionsText = stripHTMLForCheck(state.questionsHTML || "");
+    const hasGroups = Array.isArray(state.questionGroups) && state.questionGroups.length > 0;
+    const hasOldGroups = Array.isArray(state.parsedQuestionGroups) && state.parsedQuestionGroups.length > 0;
+    const hasVocab = Array.isArray(state.vocabularyList) && state.vocabularyList.length > 0;
+    return passageText.length > 10 || questionsText.length > 10 || hasGroups || hasOldGroups || hasVocab;
+}
+
+function restoreAppState(rawState = {}) {
+    const state = normalizeCloudAppState(rawState);
+    if (!state || typeof state !== "object") {
+        alert("云端项目数据格式异常，无法恢复。");
+        return false;
+    }
+
     clearAllLines(false);
-    if (state.passageHTML) passageWorkspace.innerHTML = state.passageHTML;
+
+    // 先恢复题型结构数据，再恢复 DOM。这样旧版本只保存 questionGroups 时也能重新渲染题目。
     if (Array.isArray(state.questionGroups)) parsedQuestionGroups = state.questionGroups;
     else if (Array.isArray(state.parsedQuestionGroups)) parsedQuestionGroups = state.parsedQuestionGroups;
-    if (state.questionsHTML) questionsWorkspace.innerHTML = state.questionsHTML;
-    else if (parsedQuestionGroups.length) confirmAndRenderCBT(false);
+
+    if (typeof state.passageHTML === "string" && state.passageHTML.trim()) {
+        passageWorkspace.innerHTML = state.passageHTML;
+    }
+
+    if (typeof state.questionsHTML === "string" && state.questionsHTML.trim()) {
+        questionsWorkspace.innerHTML = state.questionsHTML;
+    } else if (Array.isArray(parsedQuestionGroups) && parsedQuestionGroups.length) {
+        confirmAndRenderCBT(false);
+    }
+
     if (Array.isArray(state.vocabularyList)) {
         vocabularyList = state.vocabularyList;
         localStorage.setItem('ieltsTrainerVocab', JSON.stringify(vocabularyList));
         updateVocabBadge?.();
     }
+
     if (state.typography) {
         const fontSlider = document.getElementById("font-size-slider");
         const lineSlider = document.getElementById("line-height-slider");
@@ -220,10 +262,14 @@ function restoreAppState(state = {}) {
         if (lineSlider && state.typography.lineHeight) lineSlider.value = state.typography.lineHeight;
         updateTypography?.();
     }
+
     refreshChunkCounter();
-    const restoredLineRecords = state.lineRecords || [];
+    const restoredLineRecords = Array.isArray(state.lineRecords) ? state.lineRecords : [];
     restoreLineRecords(restoredLineRecords, true);
     if (!restoredLineRecords.length) saveCurrentProject();
+
+    // 明确返回是否真的恢复到了可见内容，方便云端打开时给用户提示。
+    return hasMeaningfulAppState(state);
 }
 
 async function saveProjectToCloud() {
@@ -232,6 +278,13 @@ async function saveProjectToCloud() {
     const user = await getCurrentCloudUser();
     if (!user) { openAuthModal(); alert("请先登录，再保存云端项目"); return; }
     const appState = collectCurrentAppState();
+
+    // 防止误把空白 Welcome/初始页面保存成云项目，导致换浏览器打开后看不到内容。
+    if (!hasMeaningfulAppState(appState)) {
+        const shouldContinue = confirm("当前项目看起来还没有导入有效原文或题目。仍然要保存一个空项目吗？");
+        if (!shouldContinue) return;
+    }
+
     let title = localStorage.getItem("ieltsCurrentProjectTitle") || "IELTS Reading Project";
     const inputTitle = prompt("项目名称：", title);
     if (inputTitle !== null && inputTitle.trim()) title = inputTitle.trim();
@@ -320,13 +373,24 @@ async function restoreProjectFromCloud(projectId) {
         .eq("id", projectId)
         .single();
     if (error) { alert("打开失败：" + error.message); return; }
+
+    const state = normalizeCloudAppState(data.app_state || {});
+    if (!hasMeaningfulAppState(state)) {
+        alert("这个云端项目里没有有效的原文/题干内容。大概率是之前误保存了空白项目，请回到原浏览器打开有内容的页面后重新点击「云端保存」。");
+        return;
+    }
+
     currentCloudProjectId = data.id;
     localStorage.setItem("ieltsCurrentCloudProjectId", data.id);
     localStorage.setItem("ieltsCurrentProjectTitle", data.title || "IELTS Reading Project");
-    restoreAppState(data.app_state || {});
+
+    // 先进入主程序，避免 Welcome 遮罩层导致用户误以为项目没有打开。
     closeCloudProjectsModal();
     enterProgram?.();
-    alert("项目已恢复");
+    setTimeout(() => {
+        const restored = restoreAppState(state);
+        alert(restored ? "项目已恢复" : "项目已打开，但未检测到可见原文/题干内容");
+    }, 420);
 }
 
 async function duplicateCloudProject(projectId) {
