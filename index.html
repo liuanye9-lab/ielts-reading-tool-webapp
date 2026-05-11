@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Reading Lab · Liquid Glass</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leader-line-new@1.1.9/leader-line.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+    
+    <script>
+        if (typeof window !== 'undefined' && window['pdfjs-dist/build/pdf']) {
+            window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+        }
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        morandi: {
+                            bg: '#e7e3db',
+                            surface: '#f3f1eb',
+                            text: '#292722',
+                            subtext: '#7a766e',
+                            border: '#cbc5ba',
+                            primary: '#706b62',
+                            primaryHover: '#57524a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                        serif: ['"SF Pro Display"', '"Times New Roman"', 'Times', 'serif']
+                    },
+                    boxShadow: {
+                        'apple': '0 4px 24px rgba(0, 0, 0, 0.04)',
+                        'apple-modal': '0 20px 40px rgba(0, 0, 0, 0.12)',
+                        'cbt': '0 2px 8px rgba(0, 0, 0, 0.04)',
+                        'popover': '0 10px 30px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-screen flex flex-col font-sans selection:bg-gray-200">
+
+    <div id="welcome-screen" class="welcome-screen" aria-label="Welcome screen">
+        <div class="welcome-ambient ambient-one"></div>
+        <div class="welcome-ambient ambient-two"></div>
+        <div class="welcome-orb orb-one"></div>
+        <div class="welcome-orb orb-two"></div>
+        <div class="welcome-shell">
+            <section class="welcome-hero glass-panel">
+                <div class="welcome-chip">IELTS Reading Lab · iOS26 Glass</div>
+                <h2>Welcome</h2>
+                <p class="welcome-lead">极简留白与玻璃质感的阅读训练界面，把视觉注意力集中在句子主干、修饰层级、词块关系和论证结构。</p>
+                <div class="welcome-actions">
+                    <button class="welcome-primary" onclick="enterProgram()">进入程序</button>
+                    <button class="welcome-secondary" onclick="openGuideFromWelcome()">查看说明文档</button>
+                    <button class="welcome-secondary" onclick="openAuthModal()">登录 / 云端同步</button>
+                </div>
+                <div class="welcome-meta">
+                    <span>英文脑阅读训练</span>
+                    <span>词块关系理解</span>
+                    <span>机考题干结构化</span>
+                </div>
+            </section>
+
+            <aside class="welcome-doc glass-panel">
+                <div class="doc-head">
+                    <div class="doc-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M8 3.75h5.5L18 8.25V19a1.75 1.75 0 0 1-1.75 1.75h-8.5A1.75 1.75 0 0 1 6 19V5.5A1.75 1.75 0 0 1 7.75 3.75Z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M13.5 3.75V8.5H18"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M9 11.25h6M9 14.5h6M9 17.75h4"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>设计说明文档 · 使用文档</h3>
+                        <p>Workflow / Reading method / UI logic</p>
+                    </div>
+                </div>
+
+                <div class="doc-body">
+                    <div class="doc-item"><span>01</span><p>首先导入文档内容。题目文档需要手动调参，文档内容可以直接在机考网复制过来；遇到无法复制的题型如标题题，Mac 可以采用 <strong>command + shift + 4</strong> 截图提取文字，或使用微信截图识取文字提取。</p></div>
+                    <div class="doc-item"><span>02</span><p>选中文本按 <strong>A</strong>，标记主干句。</p></div>
+                    <div class="doc-item"><span>03</span><p>选中文本按 <strong>S</strong>，标记修饰句。</p></div>
+                    <div class="doc-item"><span>04</span><p>选中文本按 <strong>W</strong> 搜索单词并加入生词本 / 错词本；查词模块按百度翻译搜索模型的产品逻辑设计。</p></div>
+                    <div class="doc-item"><span>05</span><p>标记的文本按 <strong>D</strong>，选择并标记词块论证标签。</p></div>
+                    <div class="doc-item"><span>06</span><p>长按 <strong>Shift</strong>，依次选择标记块 A → B，进行逻辑连线。</p></div>
+                    <div class="doc-item"><span>07</span><p>双击高亮文本，取消高亮。</p></div>
+                    <div class="doc-item long"><span>08</span><p>主要目的：基于哔站迷糊老师的长难句阅读法思路，用于培养英文脑、论证脑的阅读习惯。用词块思维和词块关系去理解文章，摒弃“抓词”的思路，转而抓句子层次、段落层次和词块层次，强调论证过程与写作思路，克服中文脑走马观花式阅读，避免读到最后感觉白读。</p></div>
+                </div>
+
+                <div class="doc-footnote">说明文档：查词模块用于快速搜索单词并沉淀到生词本；当前前端部署版使用公开翻译接口，若要正式接入百度翻译官方 API，需要后续配置 API Key 与后端签名。</div>
+
+                <button class="site-link" onclick="openTongzhuoSite()">
+                    <span>同桌英语机考网站</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M7 17L17 7M9 7h8v8"></path></svg>
+                </button>
+            </aside>
+        </div>
+    </div>
+
+
+    <header class="bg-white/80 backdrop-blur-md border-b border-morandi-border h-16 flex items-center justify-between px-8 z-30 shrink-0 relative">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-semibold tracking-tight text-morandi-text flex items-center gap-2">
+                <svg class="w-6 h-6 text-morandi-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                IELTS Reading Lab <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold relative -top-1">Glass Reading</span>
+            </h1>
+        </div>
+        <div class="flex gap-3 items-center">
+            <!-- 新增：排版调节呼出按钮 -->
+            <div class="relative">
+                <button onclick="toggleTypographyPopover()" class="btn-transition px-4 py-1.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-full flex items-center gap-1.5 shadow-sm">
+                    <span class="font-serif italic font-bold">Aa</span> 排版
+                </button>
+                <!-- 排版调节面板 (Popover) -->
+                <div id="typography-popover" class="hidden absolute top-full right-0 mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-popover p-5 z-50">
+                    <h4 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">阅读显示调节</h4>
+                    <div class="mb-5">
+                        <div class="flex justify-between text-xs text-slate-500 font-semibold mb-2">
+                            <span>字体大小 (Font Size)</span>
+                            <span id="font-size-val">1.1rem</span>
+                        </div>
+                        <input type="range" id="font-size-slider" min="0.8" max="1.6" step="0.05" value="1.1" oninput="updateTypography()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-500 font-semibold mb-2">
+                            <span>行高间距 (Line Height)</span>
+                            <span id="line-height-val">2.8</span>
+                        </div>
+                        <input type="range" id="line-height-slider" min="1.8" max="4.0" step="0.1" value="2.8" oninput="updateTypography()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    </div>
+                </div>
+            </div>
+
+            <button id="timer-btn" onclick="handleTimerClick()" class="btn-transition px-4 py-1.5 text-sm font-medium text-morandi-subtext hover:text-morandi-text bg-transparent border border-morandi-border hover:bg-gray-50 rounded-full flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span id="timer-display">专注</span>
+            </button>
+            <div class="w-px h-5 bg-morandi-border mx-1"></div>
+            
+            <button onclick="openVocabListModal()" class="btn-transition px-4 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-full flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                生词本 <span id="vocab-count-badge" class="ml-1 bg-white text-indigo-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">0</span>
+            </button>
+
+            <button onclick="saveProjectToCloud()" class="btn-transition px-4 py-1.5 text-sm font-medium text-morandi-text bg-white/60 hover:bg-white border border-morandi-border rounded-full flex items-center gap-1.5 shadow-sm">
+                云端保存
+            </button>
+            <button onclick="openCloudProjectsModal()" class="btn-transition px-4 py-1.5 text-sm font-medium text-morandi-text bg-white/60 hover:bg-white border border-morandi-border rounded-full flex items-center gap-1.5 shadow-sm">
+                我的项目
+            </button>
+            <button id="auth-status-btn" onclick="openAuthModal()" class="btn-transition px-4 py-1.5 text-sm font-medium text-morandi-subtext hover:text-morandi-text bg-transparent border border-morandi-border hover:bg-gray-50 rounded-full">
+                <span id="auth-status-text">登录</span>
+            </button>
+
+            <button onclick="clearAllLines()" class="btn-transition px-4 py-1.5 text-sm font-medium text-morandi-subtext hover:text-morandi-text bg-transparent border border-morandi-border hover:bg-gray-50 rounded-full">
+                清除连线
+            </button>
+            <button onclick="openGuideModal()" class="btn-transition px-4 py-1.5 text-sm font-medium text-morandi-text bg-gray-100 hover:bg-gray-200 rounded-full flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                说明文档
+            </button>
+            <button onclick="openInputModal()" class="btn-transition px-5 py-1.5 text-sm font-medium bg-morandi-primary text-white rounded-full hover:bg-morandi-primaryHover shadow-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                导入文档
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex overflow-hidden relative p-4 gap-2" id="split-container">
+        <!-- 原文区 (改用百分比宽度以便拖拽计算) -->
+        <section id="left-panel" style="width: 50%;" class="flex flex-col bg-morandi-surface rounded-2xl shadow-apple overflow-hidden relative shrink-0">
+            <div class="bg-transparent py-3 px-6 border-b border-morandi-border text-xs font-semibold uppercase tracking-wider text-morandi-subtext z-10 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Passage / 原文
+            </div>
+            <div id="passage-workspace" class="content-area p-8 overflow-y-auto flex-1 font-serif text-gray-800" onscroll="updateLinesThrottled()">
+                <div class="h-full flex flex-col items-center justify-center text-morandi-subtext">
+                    <p class="mb-4">点击右上角「导入文档」导入阅读内容</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 真正生效的拖拽条 -->
+        <div class="resizer" id="drag-bar" title="左右拖动调整页面比例"></div>
+
+        <!-- 题干区 -->
+        <section id="right-panel" style="width: calc(50% - 16px);" class="flex flex-col bg-morandi-surface rounded-2xl shadow-apple overflow-hidden relative flex-1">
+            <div class="bg-transparent py-3 px-6 border-b border-morandi-border text-xs font-semibold uppercase tracking-wider text-morandi-subtext z-10 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Questions / 题干
+            </div>
+            <div id="questions-workspace" class="content-area p-6 lg:p-10 overflow-y-auto flex-1 font-sans text-gray-800 bg-[#f8fafc]" onscroll="updateLinesThrottled()">
+                <div class="h-full flex flex-col items-center justify-center text-morandi-subtext">
+                    <p class="mb-4">选中文本后，用 A / S / D 建立阅读证据层级；按住 Shift 连接逻辑线</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- [此处保留：文本载入 input-modal, 校对 step-2-review, guide-modal, vocab-modal, list-modal, chunk-label, line-label, timer] -->
+    <div id="input-modal" class="fixed inset-0 hidden z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 modal-overlay" onclick="closeInputModal()"></div>
+        <div class="bg-white rounded-2xl shadow-apple-modal w-full max-w-5xl relative z-10 flex flex-col h-[85vh] transform scale-95 transition-transform duration-300">
+            <div id="step-1-input" class="flex-1 flex flex-col overflow-hidden">
+                <div class="flex border-b border-morandi-border bg-gray-50 rounded-t-2xl px-8 pt-5 justify-between items-center">
+                    <div class="flex gap-6 -mb-px">
+                        <button class="pb-3 px-2 font-semibold text-morandi-primary border-b-2 border-morandi-primary">Step 1 · 导入文档内容</button>
+                    </div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <button onclick="closeInputModal()" class="p-1 text-morandi-subtext hover:text-morandi-text bg-white rounded-full shadow-sm border border-gray-200"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    </div>
+                </div>
+                <div class="p-6 flex-1 flex gap-4 bg-white relative">
+                    <div class="flex-1 flex flex-col">
+                        <label class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Passage 原文区域</label>
+                        <textarea id="input-passage" class="flex-1 p-4 border border-morandi-border rounded-xl focus:ring-2 focus:ring-morandi-primary outline-none resize-none text-sm font-sans text-gray-700 bg-gray-50" placeholder="粘贴 IELTS 阅读原文。建议保留自然段结构，系统会自动分段渲染。"></textarea>
+                    </div>
+                    <div class="flex-1 flex flex-col relative">
+                        <label class="text-xs font-semibold text-indigo-500 mb-2 uppercase tracking-wide flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Questions 题干提取区</label>
+                        <textarea id="input-questions" class="flex-1 p-4 border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-sm font-sans text-gray-700 bg-indigo-50/30" placeholder="粘贴题干、选项和说明文档。系统会自动识别题型并进入结构化校对。"></textarea>
+                    </div>
+                </div>
+                <div class="px-8 py-4 border-t border-morandi-border flex justify-end bg-gray-50 rounded-b-2xl shrink-0">
+                    <button onclick="processToReview()" class="btn-transition px-8 py-2.5 bg-indigo-600 text-white rounded-xl font-medium shadow-sm hover:bg-indigo-700 flex items-center gap-2">
+                        结构化校对 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="step-2-review" class="hidden flex-1 flex flex-col overflow-hidden">
+                <div class="flex border-b border-morandi-border bg-gray-50 rounded-t-2xl px-8 py-4 justify-between items-center shrink-0">
+                    <div>
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2">
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">Step 2</span> 
+                            题干结构校对
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-1">先确认题型、题号和选项层级，再生成右侧机考界面。</p>
+                    </div>
+                    <button onclick="closeInputModal()" class="p-1 text-gray-400 hover:text-gray-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <div class="p-6 flex-1 overflow-y-auto bg-slate-100 translation-scroll" id="review-container"></div>
+                <div class="px-8 py-4 border-t border-morandi-border flex justify-between bg-white rounded-b-2xl shrink-0 items-center">
+                    <button onclick="backToStep1()" class="text-sm font-medium text-gray-500 hover:text-gray-800">← 返回重贴文本</button>
+                    <button onclick="confirmAndRenderCBT()" class="btn-transition px-8 py-2.5 bg-green-600 text-white rounded-xl font-medium shadow-sm hover:bg-green-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> 生成机考界面
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 其余弹窗 -->
+    <div id="guide-modal" class="fixed inset-0 hidden z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 modal-overlay" onclick="closeGuideModal()"></div>
+        <div class="bg-white rounded-2xl shadow-apple-modal w-full max-w-3xl relative z-10 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col max-h-[90vh]">
+            <div class="px-8 py-5 border-b border-morandi-border flex justify-between items-center bg-gray-50">
+                <div>
+                    <h3 class="text-lg font-semibold text-morandi-text">设计说明 · 使用文档</h3>
+                    <p class="text-xs text-morandi-subtext mt-1">快捷键、使用流程与阅读训练目标。</p>
+                </div>
+                <button onclick="closeGuideModal()" class="text-morandi-subtext hover:text-morandi-text"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div class="p-8 overflow-y-auto space-y-5">
+                <div class="shortcut-card"><kbd>导入</kbd><div><strong>先导入文档内容</strong><span>题目文档需要手动调参；可直接从机考网站复制。标题题等无法复制时，可用 Mac 的 command + shift + 4 截图提取，或微信截图识取文字。</span></div></div>
+                <div class="shortcut-card"><kbd>A</kbd><div><strong>主干句</strong><span>选中文本后按 A，用低饱和红色高权重字体标记论证主干、核心观点、主谓宾结构。</span></div></div>
+                <div class="shortcut-card"><kbd>S</kbd><div><strong>修饰句</strong><span>选中文本后按 S，用低饱和绿色底纹标记限定、补充、举例、背景等修饰性信息。</span></div></div>
+                <div class="shortcut-card"><kbd>W</kbd><div><strong>搜索单词并加入生词本</strong><span>选中单词后按 W，即可查询并保存到生词本 / 错词本。查词模块按百度翻译搜索模型的产品逻辑设计；当前前端部署版使用公开翻译接口，如需正式接入百度翻译官方 API，需要后续配置 API Key 与后端签名。</span></div></div>
+                <div class="shortcut-card"><kbd>D</kbd><div><strong>词块论证标签</strong><span>给已标记文本添加观点、证据、对比、原因、结果、同义替换等词块标签。</span></div></div>
+                <div class="shortcut-card"><kbd>Shift</kbd><div><strong>逻辑连线</strong><span>长按 Shift，依次点击两个已标记块 A → B，建立逻辑连线。</span></div></div>
+                <div class="shortcut-card"><kbd>双击</kbd><div><strong>取消高亮</strong><span>双击已标记的文本，即可移除高亮和其关联逻辑线。</span></div></div>
+                <div class="shortcut-note">训练目标：基于哔站迷糊老师的长难句阅读法思路，培养英文脑、论证脑阅读习惯。核心是摒弃“抓词”的阅读惯性，转而抓句子层次、段落层次和词块层次，理解论证过程和写作思路，克服中文脑走马观花式阅读，避免读到最后感觉白读。</div>
+                <button class="site-link mt-2" onclick="openTongzhuoSite()"><span>打开同桌英语机考网站</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M7 17L17 7M9 7h8v8"></path></svg></button>
+            </div>
+            <div class="px-8 py-5 border-t border-morandi-border bg-gray-50 flex justify-end">
+                <button onclick="closeGuideModal()" class="btn-transition px-8 py-2.5 bg-morandi-primary text-white rounded-full font-medium hover:bg-morandi-primaryHover">开始练习</button>
+            </div>
+        </div>
+    </div>
+    <div id="vocab-modal" class="fixed inset-0 hidden z-50 flex items-center justify-center opacity-0 transition-opacity duration-300"><div class="absolute inset-0 modal-overlay" onclick="closeVocabModal()"></div><div class="bg-white rounded-2xl shadow-apple-modal w-full max-w-sm relative z-10 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col"><div class="px-6 py-5 border-b border-morandi-border flex justify-between items-center"><h3 class="font-semibold text-morandi-text">查词</h3><button onclick="closeVocabModal()" class="text-morandi-subtext"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="p-6 space-y-4"><input type="text" id="vocab-target" class="w-full px-3 py-2 bg-gray-50 border border-morandi-border rounded-xl font-semibold outline-none" readonly><div class="bg-gray-50 border border-morandi-border rounded-xl p-3 min-h-[5rem] overflow-y-auto" id="vocab-translation-box"></div><textarea id="vocab-chunks" rows="2" class="w-full px-3 py-2 border border-morandi-border rounded-xl outline-none text-sm resize-none"></textarea><button onclick="saveAndCloseVocab()" class="btn-transition w-full py-2.5 bg-indigo-600 text-white rounded-xl font-medium">保存入库</button></div></div></div>
+    <div id="vocab-list-modal" class="fixed inset-0 hidden z-[55] flex items-center justify-center opacity-0 transition-opacity duration-300"><div class="absolute inset-0 modal-overlay" onclick="closeVocabListModal()"></div><div class="bg-white rounded-2xl shadow-apple-modal w-full max-w-2xl relative z-10 flex flex-col h-[75vh] transform scale-95 transition-transform duration-300"><div class="px-8 py-5 border-b border-morandi-border flex justify-between items-center bg-gray-50 rounded-t-2xl shrink-0"><h3 class="text-lg font-semibold">我的生词本积累</h3><button onclick="closeVocabListModal()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="p-8 flex-1 overflow-y-auto bg-white translation-scroll" id="vocab-list-container"></div></div></div>
+    <div id="chunk-label-modal" class="fixed inset-0 hidden z-[60] flex items-center justify-center opacity-0 transition-opacity duration-300"><div class="absolute inset-0 modal-overlay" onclick="closeChunkLabelModal()"></div><div class="bg-white rounded-2xl shadow-apple-modal w-full max-w-sm relative z-10 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col p-6"><div class="flex justify-between items-center mb-5"><h3 class="text-lg font-semibold text-morandi-text">词块标签</h3><button onclick="closeChunkLabelModal()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="grid grid-cols-2 gap-2.5 mb-2"><button onclick="applyChunkLabel('观点')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">1 观点</button><button onclick="applyChunkLabel('背景')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">2 背景</button><button onclick="applyChunkLabel('证据')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">3 证据</button><button onclick="applyChunkLabel('举例')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">4 举例</button><button onclick="applyChunkLabel('对比')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">5 对比 (转折)</button><button onclick="applyChunkLabel('原因')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">6 原因</button><button onclick="applyChunkLabel('结果')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">7 结果</button><button onclick="applyChunkLabel('限定')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">8 限定</button><button onclick="applyChunkLabel('结论')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">9 结论</button><button onclick="applyChunkLabel('同义替换')" class="btn-transition text-left px-3 py-2 text-sm rounded-lg bg-blue-50 text-blue-700 border border-blue-100">P 同义替换</button></div><button onclick="applyChunkLabel('CLEAR')" class="mt-2 text-red-500 py-2 bg-red-50 rounded-xl">清除标签</button></div></div>
+    <div id="line-label-modal" class="fixed inset-0 hidden z-[60] flex items-center justify-center opacity-0 transition-opacity duration-300"><div class="absolute inset-0 modal-overlay" onclick="closeLineLabelModal()"></div><div class="bg-white rounded-2xl shadow-apple-modal w-full max-w-sm relative z-10 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col p-6"><div class="flex justify-between items-center mb-5"><h3 class="text-lg font-semibold text-morandi-text">连线标签</h3><button onclick="closeLineLabelModal()"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div><div class="grid grid-cols-2 gap-2.5 mb-5"><button onclick="applyLineLabel('支撑')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">1 支撑</button><button onclick="applyLineLabel('对比/转折')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">2 对比/转折</button><button onclick="applyLineLabel('导致')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">3 导致</button><button onclick="applyLineLabel('举例')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">4 举例</button><button onclick="applyLineLabel('定义')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">5 定义</button><button onclick="applyLineLabel('限定')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">6 限定</button><button onclick="applyLineLabel('同义改写')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">7 同义改写</button><button onclick="applyLineLabel('答案证据')" class="text-left px-3 py-2 text-sm rounded-lg bg-gray-50 border border-gray-100">8 答案证据</button></div><div class="flex gap-2 relative"><input type="text" id="custom-line-label" placeholder="自定义..." class="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none"><button onclick="applyCustomLineLabel()" class="px-4 py-2 bg-morandi-text text-white rounded-xl">确认</button></div></div></div>
+    <div id="timer-modal" class="fixed inset-0 hidden z-50 flex items-center justify-center opacity-0 transition-opacity duration-300"><div class="absolute inset-0 modal-overlay" onclick="closeTimerModal()"></div><div class="bg-white rounded-2xl shadow-apple-modal w-full max-w-sm relative z-10 overflow-hidden transform scale-95 transition-transform duration-300 flex flex-col p-8 text-center"><h3 class="font-semibold text-lg mb-2">设置专注时间</h3><div class="flex items-baseline justify-center gap-1 mb-6 text-morandi-primary"><span id="timer-val-display" class="text-6xl font-light tracking-tighter">25</span><span class="text-sm font-medium">min</span></div><input type="range" id="timer-input" min="5" max="60" step="5" value="25" oninput="updateTimerValue(this.value)" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer mb-8"><button onclick="startTimer()" class="w-full py-3 bg-morandi-text text-white rounded-xl">开启专注</button></div></div>
+
+
+
+    <!-- WebApp MVP: Supabase 登录与云端项目 -->
+    <div id="cloud-auth-modal" class="fixed inset-0 hidden z-[70] flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 modal-overlay" onclick="closeAuthModal()"></div>
+        <div class="cloud-modal-card relative z-10 transform scale-95 transition-transform duration-300">
+            <div class="cloud-modal-head">
+                <div>
+                    <h3>云端账号</h3>
+                    <p>登录后可把阅读项目保存到 Supabase 云数据库。</p>
+                </div>
+                <button onclick="closeAuthModal()" class="cloud-icon-btn" aria-label="关闭">×</button>
+            </div>
+            <div class="cloud-config-alert" id="cloud-config-alert">
+                <strong>首次配置：</strong>先创建 Supabase 项目，把 Project URL 和 anon public key 填到下面。数据库 SQL 在压缩包里的 <code>supabase-schema.sql</code>。
+            </div>
+            <div class="cloud-form-grid">
+                <label>
+                    <span>Email</span>
+                    <input id="cloud-email" type="email" placeholder="you@example.com" autocomplete="email">
+                </label>
+                <label>
+                    <span>Password</span>
+                    <input id="cloud-password" type="password" placeholder="至少 6 位密码" autocomplete="current-password">
+                </label>
+            </div>
+            <div class="cloud-actions">
+                <button onclick="handleCloudLogin()" class="cloud-primary-btn">登录</button>
+                <button onclick="handleCloudSignUp()" class="cloud-secondary-btn">注册</button>
+                <button onclick="handleCloudSignOut()" class="cloud-ghost-btn">退出</button>
+            </div>
+            <div class="cloud-status" id="cloud-auth-status">未登录</div>
+            <details class="cloud-config-box">
+                <summary>Supabase 配置</summary>
+                <label>
+                    <span>Project URL</span>
+                    <input id="supabase-url-input" type="url" placeholder="https://xxxx.supabase.co">
+                </label>
+                <label>
+                    <span>Anon public key</span>
+                    <textarea id="supabase-anon-key-input" rows="3" placeholder="eyJhbGciOi..."></textarea>
+                </label>
+                <button onclick="saveSupabaseConfigFromModal()" class="cloud-secondary-btn w-full">保存配置并初始化</button>
+                <p class="cloud-help-text">只填写 anon public key，不要填写 service_role key。service_role 只能放后端。</p>
+            </details>
+        </div>
+    </div>
+
+    <div id="cloud-projects-modal" class="fixed inset-0 hidden z-[70] flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 modal-overlay" onclick="closeCloudProjectsModal()"></div>
+        <div class="cloud-modal-card cloud-projects-card relative z-10 transform scale-95 transition-transform duration-300">
+            <div class="cloud-modal-head">
+                <div>
+                    <h3>我的云端阅读项目</h3>
+                    <p>打开历史项目后，原文、题干、A/S 高亮、D 标签和生词本会从云端恢复。</p>
+                </div>
+                <button onclick="closeCloudProjectsModal()" class="cloud-icon-btn" aria-label="关闭">×</button>
+            </div>
+            <div class="cloud-project-toolbar">
+                <button onclick="saveProjectToCloud()" class="cloud-primary-btn">保存当前项目</button>
+                <button onclick="renderCloudProjectsList()" class="cloud-secondary-btn">刷新列表</button>
+            </div>
+            <div id="cloud-projects-list" class="cloud-projects-list">
+                <div class="cloud-empty">登录后显示云端项目。</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
